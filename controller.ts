@@ -10,6 +10,8 @@ type ll<O extends string | number | object | undefined> = {
 export type LocalizationJSON = ll<LocalizationJSONRaw>
 
 class Localization {
+  private static defaultLanguage = "en"
+
   private static listeners: Set<Function> = new Set
   private static storage = new Map<string, LocalizationJSON>()
 
@@ -17,7 +19,11 @@ class Localization {
     localStorage.setItem("lang", lang)
   }
   private static get lang() {
-    return localStorage.getItem("lang") || "en"
+    return localStorage.getItem("lang") || this.defaultLanguage
+  }
+
+  public static setDefault(lang: string) {
+    this.defaultLanguage = lang
   }
 
   public static add(lang: string, data: LocalizationJSON) {
@@ -29,14 +35,14 @@ class Localization {
       return this.storage.get(this.lang)
     }
 
-    return this.storage.get("en")
-  }
-
-  public static getLang() {
-    return this.lang
+    return this.storage.get(this.defaultLanguage)
   }
 
   public static transit(lang: string) {
+    if (!this.storage.has(lang)) {
+      throw new Error("LocalizationError: this lang wasn't defined")
+    }
+
     this.lang = lang
     this.listeners.forEach(listener => listener())
   }
