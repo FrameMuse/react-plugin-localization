@@ -11,31 +11,25 @@ export type LocalizationJSON = ll<LocalizationJSONRaw>
 
 class Localization {
   private static listeners: Set<Function> = new Set
-  private static absolutePath = "app/assets/lang"
-  private static cache = new Map()
-  public static readonly settings = require(this.absolutePath + "/settings.json")
+  private static storage = new Map<string, LocalizationJSON>()
 
   private static set lang(lang: string) {
     localStorage.setItem("lang", lang)
   }
   private static get lang() {
-    return localStorage.getItem("lang") || this.settings.default
+    return localStorage.getItem("lang") || "en"
   }
 
-  private static require(lang: string): LocalizationJSON {
-    if (this.settings.activeLangs.includes(lang)) {
-      try {
-        return require(this.absolutePath + "/" + lang + ".json")
-      } catch (error: any) {
-        throw new Error("TranslationError: cannot require lang file: " + error.message)
-      }
+  public static add(lang: string, data: LocalizationJSON) {
+    this.storage.set(lang, data)
+  }
+
+  public static get() {
+    if (this.storage.has(this.lang)) {
+      return this.storage.get(this.lang)
     }
 
-    throw new Error("TranslationError: lang is not presented in settings.json")
-  }
-
-  public static get(): LocalizationJSON {
-    return this.cache.get(this.lang)
+    return this.storage.get("en")
   }
 
   public static getLang() {
@@ -44,11 +38,6 @@ class Localization {
 
   public static transit(lang: string) {
     this.lang = lang
-
-    if (!this.cache.has(lang)) {
-      this.cache.set(lang, this.require(lang))
-    }
-
     this.listeners.forEach(listener => listener())
   }
 
@@ -60,9 +49,9 @@ class Localization {
   }
 }
 
-export function Localize<Selected extends object = LocalizationJSON>(selector: (ll: LocalizationJSON) => Selected): Partial<Selected> {
-  const ll = Localization.get()
+export function Localize<Selected extends Record<string, unknown> = LocalizationJSON>(selector: (ll?: LocalizationJSON) => Selected | undefined): Partial<Selected> {
   try {
+    const ll = Localization.get()
     return selector(ll) || {}
   } catch (error) {
     return {}
