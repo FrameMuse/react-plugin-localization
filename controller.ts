@@ -26,12 +26,12 @@ class Localization {
     if (this.settings.activeLangs.includes(lang)) {
       try {
         return require(this.absolutePath + "/" + lang + ".json")
-      } catch (error) {
+      } catch (error: any) {
         throw new Error("TranslationError: cannot require lang file: " + error.message)
       }
-    } else {
-      throw new Error("TranslationError: lang is not presented in settings.json")
     }
+
+    throw new Error("TranslationError: lang is not presented in settings.json")
   }
 
   public static get(): LocalizationJSON {
