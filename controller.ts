@@ -30,7 +30,7 @@ class Localization {
     this.storage.set(lang, data)
   }
 
-  public static get() {
+  public static get(): LocalizationJSON | undefined {
     if (this.storage.has(this.lang)) {
       return this.storage.get(this.lang)
     }
