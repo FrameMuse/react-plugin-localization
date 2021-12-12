@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
-import Localization, { Localize, LocalizationJSON } from "./controller"
+import { useEffect, useState } from "react"
 
-function useLocalization<Selected extends object = LocalizationJSON>(selector?: (trans: LocalizationJSON) => Selected): Partial<Selected> {
+import Localization, { LocalizationJSON, Localize } from "./controller"
+
+function useLocalization<Selected extends object = LocalizationJSON>(selector?: (ll: LocalizationJSON) => Selected): Partial<Selected> {
   const [localization, updateLocalization] = useState(Localize(selector))
   useEffect(() => {
-    return () => Localization.onTransition(() => updateLocalization(Localize(selector)))
+    return Localization.onTransition(() => updateLocalization(Localize(selector)))
   }, [])
   return localization
 }
